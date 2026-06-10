@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AP Micro Unit 2 — Interactive Cheat Sheet</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --accent: #6c63ff;
+    --accent2: #ff6584;
+    --accent3: #43e97b;
+    --accent4: #f7971e;
+    --text: #e2e8f0;
+    --muted: #8892a4;
+    --border: #2d3148;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; }
+
+  /* NAV */
+  nav { background: var(--card); border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 100; padding: 0 16px; display: flex; align-items: center; gap: 4px; overflow-x: auto; }
+  nav button { background: none; border: none; color: var(--muted); padding: 14px 12px; cursor: pointer; font-size: 0.78rem; font-weight: 600; white-space: nowrap; transition: color 0.2s; border-bottom: 3px solid transparent; }
+  nav button:hover { color: var(--text); }
+  nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .nav-title { color: var(--accent); font-weight: 800; font-size: 0.9rem; margin-right: 8px; white-space: nowrap; }
+
+  /* SECTIONS */
+  .section { display: none; padding: 24px 20px; max-width: 1100px; margin: 0 auto; animation: fadeIn 0.25s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  h2 { font-size: 1.4rem; color: var(--accent); margin-bottom: 6px; }
+  h3 { font-size: 1rem; color: var(--accent4); margin: 18px 0 8px; }
+  p, li { font-size: 0.88rem; line-height: 1.65; color: var(--text); }
+  li { margin-left: 20px; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 16px; }
+  @media(max-width:700px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .card h4 { font-size: 0.9rem; margin-bottom: 8px; color: var(--accent3); }
+  .tag { display: inline-block; background: var(--accent); color: #fff; border-radius: 6px; padding: 2px 8px; font-size: 0.72rem; font-weight: 700; margin-right: 4px; margin-bottom: 4px; }
+  .tag.red { background: var(--accent2); }
+  .tag.green { background: var(--accent3); color: #0f1117; }
+  .tag.orange { background: var(--accent4); color: #0f1117; }
+
+  /* SVG GRAPHS */
+  .graph-wrap { display: flex; flex-direction: column; align-items: center; margin: 12px 0; }
+  svg text { font-size: 11px; font-family: 'Segoe UI', sans-serif; }
+
+  /* FORMULA BOX */
+  .formula { background: #12142a; border-left: 4px solid var(--accent); border-radius: 8px; padding: 12px 16px; margin: 10px 0; font-family: monospace; font-size: 0.9rem; color: #a8d8ff; }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 0.83rem; margin-top: 12px; }
+  th { background: var(--accent); color: #fff; padding: 8px 10px; text-align: left; }
+  td { padding: 7px 10px; border-bottom: 1px solid var(--border); }
+  tr:nth-child(even) td { background: #1e2136; }
+
+  /* QUIZ */
+  .quiz-q { background: #ffffff; border: 1px solid #94a3b8; border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+  .quiz-q p { font-weight: 800; margin-bottom: 10px; font-size: 0.88rem; color:#0f172a; }
+  .quiz-opt { display: block; background: #12142a; border: 1px solid var(--border); border-radius: 7px; padding: 8px 12px; margin: 5px 0; cursor: pointer; font-size: 0.84rem; transition: background 0.15s; }
+  .quiz-opt:hover { background: #f1f5f9; color:#0f172a; }
+  .quiz-opt.correct { background: #dcfce7; border-color: var(--accent3); color: #14532d; }
+  .quiz-opt.wrong { background: #fee2e2; border-color: #dc2626; color: #7f1d1d; }
+  .quiz-feedback { font-size: 0.8rem; margin-top: 8px; min-height: 16px; color: var(--muted); }
+  #quiz-score { font-size: 0.9rem; color: var(--accent3); margin-bottom: 16px; }
+  #reset-quiz { background: var(--accent); color: #fff; border: none; border-radius: 7px; padding: 8px 18px; cursor: pointer; font-weight: 600; margin-top: 8px; }
+
+  /* FLASHCARDS */
+  .fc-container { perspective: 1000px; width: 100%; max-width: 480px; height: 200px; margin: 16px auto; cursor: pointer; }
+  .fc-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.5s; border-radius: 14px; }
+  .fc-inner.flipped { transform: rotateY(180deg); }
+  .fc-front, .fc-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 14px; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+  .fc-front { background: var(--card); border: 2px solid var(--accent); color: var(--text); font-weight: 600; font-size: 0.95rem; }
+  .fc-back { background: #12142a; border: 2px solid var(--accent3); color: var(--accent3); transform: rotateY(180deg); font-size: 0.88rem; }
+  .fc-nav { display: flex; justify-content: center; gap: 12px; margin-top: 10px; }
+  .fc-nav button { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px 18px; border-radius: 7px; cursor: pointer; font-size: 0.82rem; }
+  .fc-nav button:hover { border-color: var(--accent); background:#dbeafe; }
+  #fc-counter { text-align: center; color: var(--muted); font-size: 0.8rem; margin-top: 6px; }
+  .fc-hint { text-align: center; color: var(--muted); font-size: 0.75rem; margin-top: 4px; }
+
+#quiz { background: var(--card); color: var(--text); }
+#quiz h2, #quiz p, #quiz div, #quiz span { color: var(--text); }
+#quiz .quiz-q { background: var(--card); border: 1px solid var(--border); }
+#quiz .quiz-q p { color: var(--text); }
+#quiz .quiz-opt { background: #ffffff; border: 2px solid #94a3b8; color: #0f172a; font-weight: 700; }
+#quiz .quiz-opt:hover { background: #e2e8f0; color: #0f172a; }
+#quiz .quiz-opt.correct { background: #dcfce7; border-color: #16a34a; color: #14532d; }
+#quiz .quiz-opt.wrong { background: #fee2e2; border-color: #dc2626; color: #7f1d1d; }
+#quiz #reset-quiz { background: #ffffff; border: 2px solid #94a3b8; color: #0f172a; font-weight: 700; }
+#quiz #reset-quiz:hover { background: #e2e8f0; }
+
+
+#quiz #reset-quiz:hover { background: #e2e8f0; }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-title">📊 AP Micro U2</span>
+  <button class="active" onclick="show('demand')">2.1 Demand</button>
+  <button onclick="show('supply')">2.2 Supply</button>
+  <button onclick="show('ped')">2.3 PED</button>
+  <button onclick="show('pes')">2.4 PES</button>
+  <button onclick="show('other-e')">2.5 Other Elasticities</button>
+  <button onclick="show('surplus')">2.6 Surplus</button>
+  <button onclick="show('disequil')">2.7 Disequilibrium</button>
+  <button onclick="show('gov')">2.8 Govt Intervention</button>
+  <button onclick="show('trade')">2.9 Int'l Trade</button>
+  <button onclick="show('flashcards')">🃏 Flashcards</button>
+  <button onclick="show('quiz')">❓ Quiz</button>
+</nav>
+
+<!-- ===================== 2.1 DEMAND ===================== -->
+<div id="demand" class="section active">
+  <h2>2.1 — Demand</h2>
+  <p>Demand = quantities consumers are <strong>willing AND able</strong> to buy at different prices. The demand curve is <em>downward-sloping</em> (inverse relationship — Law of Demand).</p>
+
+  <div class="graph-wrap">
+    <svg width="280" height="220" aria-label="Demand curve graph">
+      <rect width="280" height="220" fill="#1a1d27" rx="10"/>
+      <!-- axes -->
+      <line x1="45" y1="15" x2="45" y2="185" stroke="#475569" stroke-width="1.5"/>
+      <line x1="45" y1="185" x2="255" y2="185" stroke="#475569" stroke-width="1.5"/>
+      <!-- axis labels -->
+      <text x="22" y="100" fill="#8892a4" transform="rotate(-90,22,100)" text-anchor="middle">Price (P)</text>
+      <text x="150" y="205" fill="#8892a4" text-anchor="middle">Quantity (Q)</text>
+      <!-- demand curve D (original) -->
+      <line x1="60" y1="30" x2="240" y2="170" stroke="#1d4ed8" stroke-width="2.5"/>
+      <text x="242" y="174" fill="#1d4ed8" font-weight="bold">D</text>
+      <!-- D1 shift right -->
+      <line x1="100" y1="30" x2="240" y2="130" stroke="#16a34a" stroke-width="1.8" stroke-dasharray="6,3"/>
+      <text x="242" y="134" fill="#16a34a">D₁↑</text>
+      <!-- D2 shift left -->
+      <line x1="60" y1="70" x2="200" y2="170" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6,3"/>
+      <text x="202" y="174" fill="#dc2626">D₂↓</text>
+      <!-- Equilibrium dot -->
+      <circle cx="148" cy="100" r="4" fill="#d97706"/>
+      <text x="152" y="95" fill="#d97706">Pe,Qe</text>
+      <text x="60" y="15" fill="#0f172a" font-size="10" font-weight="bold">Demand Curve Shifts</text>
+    </svg>
+    <p style="font-size:0.76rem;color:#8892a4;margin-top:4px">Green dashed = Increase in Demand (shift right) | Red dashed = Decrease (shift left)</p>
+  </div>
+
+  <h3>Why is Demand Downward-Sloping? (3 Reasons)</h3>
+  <div class="grid3">
+    <div class="card"><h4>1. Substitution Effect</h4><p>Price ↑ → consumers buy cheaper substitutes instead.</p></div>
+    <div class="card"><h4>2. Income Effect</h4><p>Price ↓ → purchasing power ↑ → can buy more.</p></div>
+    <div class="card"><h4>3. Diminishing Marginal Utility</h4><p>Each extra unit gives less satisfaction → willing to pay less.</p></div>
+  </div>
+
+  <h3>5 Shifters of Demand <span class="tag orange">T-N-P-I-F</span></h3>
+  <table>
+    <tr><th>Shifter</th><th>Increases Demand</th><th>Decreases Demand</th></tr>
+    <tr><td><strong>T</strong>astes & Preferences</td><td>Good becomes popular</td><td>Good falls out of fashion</td></tr>
+    <tr><td><strong>N</strong>umber of Consumers</td><td>Population grows</td><td>Population shrinks</td></tr>
+    <tr><td><strong>P</strong>rice of Related Goods</td><td>Substitute price ↑ OR Complement price ↓</td><td>Substitute price ↓ OR Complement price ↑</td></tr>
+    <tr><td><strong>I</strong>ncome</td><td>Income ↑ (normal good) OR Income ↓ (inferior good)</td><td>Income ↓ (normal good) OR Income ↑ (inferior good)</td></tr>
+    <tr><td><strong>F</strong>uture Expectations</td><td>Price expected to rise → buy now</td><td>Price expected to fall → wait</td></tr>
+  </table>
+  <div class="formula">⚠️ KEY RULE: Changes in PRICE do NOT shift the demand curve — they cause movement ALONG the curve (change in Qd, not demand).</div>
+</div>
+
+<!-- ===================== 2.2 SUPPLY ===================== -->
+<div id="supply" class="section">
+  <h2>2.2 — Supply & Equilibrium</h2>
+  <p>Supply = quantities sellers are <strong>willing AND able</strong> to sell at different prices. The supply curve is <em>upward-sloping</em> (direct/positive relationship — Law of Supply).</p>
+
+  <div class="graph-wrap">
+    <svg width="280" height="220" aria-label="Supply curve graph">
+      <rect width="280" height="220" fill="#1a1d27" rx="10"/>
+      <line x1="45" y1="15" x2="45" y2="185" stroke="#475569" stroke-width="1.5"/>
+      <line x1="45" y1="185" x2="255" y2="185" stroke="#475569" stroke-width="1.5"/>
+      <text x="22" y="100" fill="#8892a4" transform="rotate(-90,22,100)" text-anchor="middle">Price (P)</text>
+      <text x="150" y="205" fill="#8892a4" text-anchor="middle">Quantity (Q)</text>
+      <!-- S original -->
+      <line x1="60" y1="170" x2="240" y2="30" stroke="#1d4ed8" stroke-width="2.5"/>
+      <text x="242" y="28" fill="#1d4ed8" font-weight="bold">S</text>
+      <!-- S1 right (increase) -->
+      <line x1="100" y1="170" x2="240" y2="60" stroke="#16a34a" stroke-width="1.8" stroke-dasharray="6,3"/>
+      <text x="242" y="58" fill="#16a34a">S₁↑</text>
+      <!-- S2 left (decrease) -->
+      <line x1="60" y1="130" x2="200" y2="30" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6,3"/>
+      <text x="202" y="28" fill="#dc2626">S₂↓</text>
+      <text x="60" y="15" fill="#0f172a" font-size="10" font-weight="bold">Supply Curve Shifts</text>
+    </svg>
+    <p style="font-size:0.76rem;color:#8892a4;margin-top:4px">Green = Increase in Supply (right) | Red = Decrease (left)</p>
+  </div>
+
+  <h3>6 Shifters of Supply <span class="tag orange">P-N-T-G-E</span></h3>
+  <table>
+    <tr><th>Shifter</th><th>Increases Supply</th><th>Decreases Supply</th></tr>
+    <tr><td><strong>P</strong>rices/Availability of Inputs</td><td>Input cost ↓ or inputs more available</td><td>Input cost ↑ or inputs scarce</td></tr>
+    <tr><td><strong>N</strong>umber of Sellers</td><td>More firms enter market</td><td>Firms leave market</td></tr>
+    <tr><td><strong>T</strong>echnology</td><td>New tech improves efficiency</td><td>Tech becomes obsolete</td></tr>
+    <tr><td><strong>G</strong>ovt Action (Tax/Subsidy)</td><td>Subsidy → supply ↑</td><td>Tax → supply ↓</td></tr>
+    <tr><td><strong>E</strong>xpectations of Future Profit</td><td>Expect lower future price → sell now</td><td>Expect higher future price → hold back</td></tr>
+  </table>
+
+  <h3>Equilibrium</h3>
+  <div class="grid2">
+    <div class="card">
+      <h4>Surplus (Qd &lt; Qs)</h4>
+      <p>Price is <strong>above equilibrium</strong>. Producers lower prices → market moves back to equilibrium.</p>
+    </div>
+    <div class="card">
+      <h4>Shortage (Qd &gt; Qs)</h4>
+      <p>Price is <strong>below equilibrium</strong>. Producers raise prices → market moves back to equilibrium.</p>
+    </div>
+  </div>
+  <div class="formula">⚠️ KEY RULE: Changes in PRICE do NOT shift the supply curve — they cause movement ALONG the curve (change in Qs, not supply).</div>
+</div>
+
+<!-- ===================== 2.3 PED ===================== -->
+<div id="ped" class="section">
+  <h2>2.3 — Price Elasticity of Demand (PED)</h2>
+  <p>PED measures how <strong>sensitive quantity demanded is to a change in price</strong>. Coefficient is always negative (use absolute value).</p>
+
+  <div class="formula">PED = % Change in Qd ÷ % Change in Price &nbsp;|&nbsp; % Change = (New − Old) / Old</div>
+
+  <div class="graph-wrap">
+    <svg width="400" height="160" aria-label="Elasticity spectrum">
+      <rect width="400" height="160" fill="#1a1d27" rx="10"/>
+      <text x="200" y="20" fill="#0f172a" font-size="11" text-anchor="middle" font-weight="bold">Elasticity Visualized — Demand Curves</text>
+      <!-- 5 demand curves -->
+      <!-- Perfectly Inelastic (vertical) -->
+      <line x1="50" y1="30" x2="50" y2="140" stroke="#dc2626" stroke-width="2.5"/>
+      <text x="50" y="153" fill="#dc2626" text-anchor="middle" font-size="9">Perfectly Inelastic</text>
+      <text x="50" y="163" fill="#dc2626" text-anchor="middle" font-size="8">PED=0</text>
+      <!-- Relatively Inelastic (steep) -->
+      <line x1="108" y1="30" x2="118" y2="140" stroke="#d97706" stroke-width="2.5"/>
+      <text x="113" y="153" fill="#d97706" text-anchor="middle" font-size="9">Rel. Inelastic</text>
+      <text x="113" y="163" fill="#d97706" text-anchor="middle" font-size="8">PED &lt; 1</text>
+      <!-- Unit Elastic -->
+      <line x1="178" y1="30" x2="198" y2="140" stroke="#e2e8f0" stroke-width="2.5"/>
+      <text x="188" y="153" fill="#0f172a" text-anchor="middle" font-size="9">Unit Elastic</text>
+      <text x="188" y="163" fill="#0f172a" text-anchor="middle" font-size="8">PED = 1</text>
+      <!-- Relatively Elastic -->
+      <line x1="248" y1="30" x2="308" y2="140" stroke="#16a34a" stroke-width="2.5"/>
+      <text x="278" y="153" fill="#16a34a" text-anchor="middle" font-size="9">Rel. Elastic</text>
+      <text x="278" y="163" fill="#16a34a" text-anchor="middle" font-size="8">PED &gt; 1</text>
+      <!-- Perfectly Elastic (horizontal) -->
+      <line x1="330" y1="85" x2="390" y2="85" stroke="#1d4ed8" stroke-width="2.5"/>
+      <text x="360" y="153" fill="#1d4ed8" text-anchor="middle" font-size="9">Perf. Elastic</text>
+      <text x="360" y="163" fill="#1d4ed8" text-anchor="middle" font-size="8">PED = ∞</text>
+      <!-- Y axes for each -->
+      <line x1="45" y1="25" x2="45" y2="145" stroke="#2d3148" stroke-width="1"/>
+      <line x1="103" y1="25" x2="103" y2="145" stroke="#2d3148" stroke-width="1"/>
+      <line x1="173" y1="25" x2="173" y2="145" stroke="#2d3148" stroke-width="1"/>
+      <line x1="243" y1="25" x2="243" y2="145" stroke="#2d3148" stroke-width="1"/>
+      <line x1="325" y1="25" x2="325" y2="145" stroke="#2d3148" stroke-width="1"/>
+    </svg>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <h3>Inelastic Characteristics</h3>
+      <ul>
+        <li>Few or no substitutes</li>
+        <li>Necessities (gas, medicine, diapers)</li>
+        <li>Small portion of income</li>
+        <li>Required immediately</li>
+        <li>Coefficient &lt; 1 (steep curve = "I")</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Elastic Characteristics</h3>
+      <ul>
+        <li>Many substitutes available</li>
+        <li>Luxuries (yachts, soda, real estate)</li>
+        <li>Large portion of income</li>
+        <li>Plenty of time to decide</li>
+        <li>Coefficient &gt; 1 (flat curve)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Total Revenue Test</h3>
+  <table>
+    <tr><th>Demand Type</th><th>Price ↑</th><th>Price ↓</th></tr>
+    <tr><td>Inelastic (PED &lt; 1)</td><td>TR ↑</td><td>TR ↓</td></tr>
+    <tr><td>Elastic (PED &gt; 1)</td><td>TR ↓</td><td>TR ↑</td></tr>
+    <tr><td>Unit Elastic (PED = 1)</td><td>TR unchanged</td><td>TR unchanged</td></tr>
+  </table>
+  <div class="formula">⚠️ Elasticity ≠ Slope. Elasticity varies along a linear demand curve — upper portion is more elastic, lower portion is more inelastic.</div>
+</div>
+
+<!-- ===================== 2.4 PES ===================== -->
+<div id="pes" class="section">
+  <h2>2.4 — Price Elasticity of Supply (PES)</h2>
+  <p>PES measures how <strong>sensitive quantity supplied is to a change in price</strong>. Based primarily on <em>time</em> — producers need time to produce more.</p>
+
+  <div class="formula">PES = % Change in Qs ÷ % Change in Price &nbsp;(always positive — direct relationship)</div>
+
+  <div class="graph-wrap">
+    <svg width="400" height="160" aria-label="Supply elasticity spectrum">
+      <rect width="400" height="160" fill="#1a1d27" rx="10"/>
+      <text x="200" y="20" fill="#0f172a" font-size="11" text-anchor="middle" font-weight="bold">Elasticity Visualized — Supply Curves</text>
+      <!-- Perfectly Inelastic (vertical) -->
+      <line x1="50" y1="30" x2="50" y2="140" stroke="#dc2626" stroke-width="2.5"/>
+      <text x="50" y="153" fill="#dc2626" text-anchor="middle" font-size="9">Perf. Inelastic</text>
+      <text x="50" y="163" fill="#dc2626" text-anchor="middle" font-size="8">PES=0</text>
+      <!-- Relatively Inelastic (steep) -->
+      <line x1="108" y1="140" x2="118" y2="30" stroke="#d97706" stroke-width="2.5"/>
+      <text x="113" y="153" fill="#d97706" text-anchor="middle" font-size="9">Rel. Inelastic</text>
+      <text x="113" y="163" fill="#d97706" text-anchor="middle" font-size="8">PES &lt; 1</text>
+      <!-- Unit Elastic -->
+      <line x1="173" y1="140" x2="208" y2="30" stroke="#e2e8f0" stroke-width="2.5"/>
+      <text x="190" y="153" fill="#0f172a" text-anchor="middle" font-size="9">Unit Elastic</text>
+      <text x="190" y="163" fill="#0f172a" text-anchor="middle" font-size="8">PES = 1</text>
+      <!-- Relatively Elastic -->
+      <line x1="243" y1="140" x2="315" y2="30" stroke="#16a34a" stroke-width="2.5"/>
+      <text x="279" y="153" fill="#16a34a" text-anchor="middle" font-size="9">Rel. Elastic</text>
+      <text x="279" y="163" fill="#16a34a" text-anchor="middle" font-size="8">PES &gt; 1</text>
+      <!-- Perfectly Elastic (horizontal) -->
+      <line x1="330" y1="85" x2="390" y2="85" stroke="#1d4ed8" stroke-width="2.5"/>
+      <text x="360" y="153" fill="#1d4ed8" text-anchor="middle" font-size="9">Perf. Elastic</text>
+      <text x="360" y="163" fill="#1d4ed8" text-anchor="middle" font-size="8">PES = ∞</text>
+      <line x1="45" y1="25" x2="45" y2="145" stroke="#2d3148" stroke-width="1"/>
+      <line x1="103" y1="25" x2="103" y2="145" stroke="#2d3148" stroke-width="1"/>
+      <line x1="168" y1="25" x2="168" y2="145" stroke="#2d3148" stroke-width="1"/>
+      <line x1="238" y1="25" x2="238" y2="145" stroke="#2d3148" stroke-width="1"/>
+      <line x1="325" y1="25" x2="325" y2="145" stroke="#2d3148" stroke-width="1"/>
+    </svg>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>Inelastic Supply (PES &lt; 1)</h4>
+      <ul>
+        <li>Hard to produce</li>
+        <li>High barriers to entry</li>
+        <li>Specialized/costly inputs</li>
+        <li>Hard to switch production</li>
+        <li>Short-run: most goods are inelastic</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Elastic Supply (PES &gt; 1)</h4>
+      <ul>
+        <li>Easier to produce</li>
+        <li>Low barriers to entry</li>
+        <li>Generic/low-cost inputs</li>
+        <li>Easy to switch production</li>
+        <li>Long-run: most goods become elastic</li>
+      </ul>
+    </div>
+  </div>
+  <div class="formula">Example: Michelangelo sculptures → perfectly inelastic supply (PES = 0) — fixed quantity, can never produce more.</div>
+</div>
+
+<!-- ===================== 2.5 OTHER ELASTICITIES ===================== -->
+<div id="other-e" class="section">
+  <h2>2.5 — Other Elasticities (XED & YED)</h2>
+
+  <div class="grid2">
+    <div>
+      <h3>Cross-Price Elasticity of Demand (XED)</h3>
+      <p>Measures how sensitive Qd of Good B is to a change in price of Good A.</p>
+      <div class="formula">XED = % ΔQd of Good B ÷ % ΔP of Good A</div>
+      <table>
+        <tr><th>Coefficient</th><th>Relationship</th><th>Type</th></tr>
+        <tr><td>Positive (+)</td><td>Direct</td><td>Substitutes</td></tr>
+        <tr><td>Negative (−)</td><td>Inverse</td><td>Complements</td></tr>
+      </table>
+      <p style="margin-top:8px;font-size:0.82rem;color:#8892a4">Ex: Netflix ↑ price → Blu-ray Qd ↑ → XED = +0.25 → <strong>Substitutes</strong><br>Printers ↑ price → Ink Cartridges Qd ↓ → XED = −2 → <strong>Complements</strong></p>
+    </div>
+    <div>
+      <h3>Income Elasticity of Demand (YED)</h3>
+      <p>Measures how sensitive Qd is to a change in consumer <strong>income</strong>.</p>
+      <div class="formula">YED = % ΔQd ÷ % ΔIncome</div>
+      <table>
+        <tr><th>Coefficient</th><th>Relationship</th><th>Good Type</th></tr>
+        <tr><td>Positive (+)</td><td>Direct</td><td>Normal Good</td></tr>
+        <tr><td>Negative (−)</td><td>Inverse</td><td>Inferior Good</td></tr>
+      </table>
+      <p style="margin-top:8px;font-size:0.82rem;color:#8892a4">Normal: Luxury cars, seafood, jewelry (income ↑ → demand ↑)<br>Inferior: Top Ramen, used cars (income ↑ → demand ↓)</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 2.6 SURPLUS ===================== -->
+<div id="surplus" class="section">
+  <h2>2.6 — Equilibrium, Consumer & Producer Surplus</h2>
+
+  <div class="graph-wrap">
+    <svg width="300" height="240" aria-label="Consumer and Producer Surplus graph">
+      <rect width="300" height="240" fill="#1a1d27" rx="10"/>
+      <!-- axes -->
+      <line x1="45" y1="15" x2="45" y2="195" stroke="#475569" stroke-width="1.5"/>
+      <line x1="45" y1="195" x2="265" y2="195" stroke="#475569" stroke-width="1.5"/>
+      <text x="22" y="105" fill="#8892a4" transform="rotate(-90,22,105)" text-anchor="middle" font-size="10">Price (P)</text>
+      <text x="155" y="215" fill="#8892a4" text-anchor="middle" font-size="10">Quantity (Q)</text>
+      <!-- Demand curve -->
+      <line x1="60" y1="25" x2="240" y2="175" stroke="#1d4ed8" stroke-width="2.5"/>
+      <text x="243" y="179" fill="#1d4ed8" font-weight="bold" font-size="11">D</text>
+      <!-- Supply curve -->
+      <line x1="60" y1="175" x2="240" y2="25" stroke="#d97706" stroke-width="2.5"/>
+      <text x="243" y="23" fill="#d97706" font-weight="bold" font-size="11">S</text>
+      <!-- Equilibrium point -->
+      <circle cx="150" cy="100" r="5" fill="#fff"/>
+      <!-- Equilibrium price line -->
+      <line x1="45" y1="100" x2="150" y2="100" stroke="#fff" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="28" y="103" fill="#fff" font-size="9">Pe</text>
+      <!-- Equilibrium qty line -->
+      <line x1="150" y1="100" x2="150" y2="195" stroke="#fff" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="145" y="210" fill="#fff" font-size="9">Qe</text>
+      <!-- CS area (triangle above Pe below D) -->
+      <polygon points="45,25 150,100 60,25" fill="#1d4ed8" fill-opacity="0.25"/>
+      <text x="80" y="70" fill="#1d4ed8" font-size="10" font-weight="bold">CS</text>
+      <!-- PS area (triangle below Pe above S) -->
+      <polygon points="45,175 150,100 60,175" fill="#d97706" fill-opacity="0.25"/>
+      <text x="75" y="155" fill="#d97706" font-size="10" font-weight="bold">PS</text>
+      <text x="60" y="12" fill="#0f172a" font-size="10" font-weight="bold">Consumer &amp; Producer Surplus</text>
+    </svg>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>Consumer Surplus (CS)</h4>
+      <p>What consumers were willing to pay <em>minus</em> what they actually paid.</p>
+      <div class="formula" style="margin-top:8px">CS = Buyer's Max − Price Paid<br>On graph = triangle ABOVE Pe, BELOW D</div>
+    </div>
+    <div class="card">
+      <h4>Producer Surplus (PS)</h4>
+      <p>Price received <em>minus</em> the minimum sellers were willing to accept.</p>
+      <div class="formula" style="margin-top:8px">PS = Price Received − Seller's Min<br>On graph = triangle BELOW Pe, ABOVE S</div>
+    </div>
+  </div>
+
+  <h3>Deadweight Loss (DWL)</h3>
+  <p>Lost efficiency when mutually beneficial transactions <strong>cannot</strong> take place. DWL = lost CS + lost PS. Occurs when quantity traded ≠ Qe. <strong>Total surplus is maximized at equilibrium.</strong></p>
+</div>
+
+<!-- ===================== 2.7 DISEQUILIBRIUM ===================== -->
+<div id="disequil" class="section">
+  <h2>2.7 — Market Disequilibrium & Changes in Equilibrium</h2>
+
+  <h3>S&D Analysis: Easy as 1-2-3</h3>
+  <div class="grid3">
+    <div class="card"><h4>Step 1: Before the Change</h4><p>Draw S and D. Label original Pe and Qe.</p></div>
+    <div class="card"><h4>Step 2: The Change</h4><p>Did it affect S or D first? Which determinant shifted? Draw increase or decrease.</p></div>
+    <div class="card"><h4>Step 3: After the Change</h4><p>Label new equilibrium. What happens to Price? What happens to Quantity?</p></div>
+  </div>
+
+  <h3>Double Shift Rule</h3>
+  <div class="formula">If TWO curves shift at the same time → EITHER Price OR Quantity will be indeterminate (ambiguous)</div>
+
+  <table>
+    <tr><th>Shift Combination</th><th>Price</th><th>Quantity</th></tr>
+    <tr><td>D ↑ and S ↑</td><td>Indeterminate</td><td>↑ Increases</td></tr>
+    <tr><td>D ↑ and S ↓</td><td>↑ Increases</td><td>Indeterminate</td></tr>
+    <tr><td>D ↓ and S ↑</td><td>↓ Decreases</td><td>Indeterminate</td></tr>
+    <tr><td>D ↓ and S ↓</td><td>Indeterminate</td><td>↓ Decreases</td></tr>
+  </table>
+
+  <div class="graph-wrap" style="margin-top:16px">
+    <svg width="300" height="210" aria-label="Shift example supply increase">
+      <rect width="300" height="210" fill="#1a1d27" rx="10"/>
+      <line x1="45" y1="15" x2="45" y2="185" stroke="#475569" stroke-width="1.5"/>
+      <line x1="45" y1="185" x2="265" y2="185" stroke="#475569" stroke-width="1.5"/>
+      <text x="22" y="100" fill="#8892a4" transform="rotate(-90,22,100)" text-anchor="middle" font-size="10">P</text>
+      <text x="155" y="205" fill="#8892a4" text-anchor="middle" font-size="10">Q</text>
+      <!-- D -->
+      <line x1="65" y1="25" x2="235" y2="175" stroke="#1d4ed8" stroke-width="2"/>
+      <text x="237" y="178" fill="#1d4ed8" font-size="11">D</text>
+      <!-- S original -->
+      <line x1="65" y1="175" x2="195" y2="25" stroke="#d97706" stroke-width="2"/>
+      <text x="197" y="23" fill="#d97706" font-size="11">S</text>
+      <!-- S1 (supply increases, shifts right) -->
+      <line x1="105" y1="175" x2="235" y2="25" stroke="#16a34a" stroke-width="2" stroke-dasharray="5,3"/>
+      <text x="237" y="23" fill="#16a34a" font-size="11">S₁</text>
+      <!-- Old equilibrium ~130,100 -->
+      <circle cx="130" cy="100" r="4" fill="#fff"/>
+      <line x1="45" y1="100" x2="130" y2="100" stroke="#fff" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="28" y="103" fill="#fff" font-size="9">Pe</text>
+      <line x1="130" y1="100" x2="130" y2="185" stroke="#fff" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="125" y="198" fill="#fff" font-size="9">Qe</text>
+      <!-- New equilibrium -->
+      <circle cx="168" cy="122" r="4" fill="#16a34a"/>
+      <line x1="45" y1="122" x2="168" y2="122" stroke="#16a34a" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="26" y="125" fill="#16a34a" font-size="9">P₁↓</text>
+      <line x1="168" y1="122" x2="168" y2="185" stroke="#16a34a" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="162" y="198" fill="#16a34a" font-size="9">Q₁↑</text>
+      <text x="55" y="13" fill="#0f172a" font-size="10" font-weight="bold">Supply Increases → P↓ Q↑</text>
+    </svg>
+  </div>
+</div>
+
+<!-- ===================== 2.8 GOVT INTERVENTION ===================== -->
+<div id="gov" class="section">
+  <h2>2.8 — Effects of Government Intervention</h2>
+
+  <div class="grid2">
+    <div>
+      <h3>Price Ceiling</h3>
+      <p><strong>Maximum</strong> legal price a seller can charge. Binding only if set <strong>BELOW</strong> equilibrium → causes a <strong>Shortage</strong>.</p>
+      <div class="graph-wrap">
+        <svg width="240" height="200" aria-label="Price ceiling graph">
+          <rect width="240" height="200" fill="#1a1d27" rx="10"/>
+          <line x1="40" y1="15" x2="40" y2="175" stroke="#475569" stroke-width="1.5"/>
+          <line x1="40" y1="175" x2="220" y2="175" stroke="#475569" stroke-width="1.5"/>
+          <text x="20" y="95" fill="#8892a4" transform="rotate(-90,20,95)" text-anchor="middle" font-size="9">P</text>
+          <text x="130" y="192" fill="#8892a4" text-anchor="middle" font-size="9">Q</text>
+          <!-- D -->
+          <line x1="55" y1="25" x2="215" y2="165" stroke="#1d4ed8" stroke-width="2"/>
+          <text x="217" y="168" fill="#1d4ed8" font-size="10">D</text>
+          <!-- S -->
+          <line x1="55" y1="165" x2="195" y2="25" stroke="#d97706" stroke-width="2"/>
+          <text x="197" y="23" fill="#d97706" font-size="10">S</text>
+          <!-- Equilibrium -->
+          <circle cx="125" cy="95" r="3" fill="#fff"/>
+          <line x1="40" y1="95" x2="125" y2="95" stroke="#fff" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="22" y="98" fill="#fff" font-size="8">Pe</text>
+          <!-- Ceiling below eq -->
+          <line x1="40" y1="130" x2="220" y2="130" stroke="#dc2626" stroke-width="2"/>
+          <text x="4" y="133" fill="#dc2626" font-size="8">Pc</text>
+          <!-- Qs at ceiling -->
+          <line x1="90" y1="130" x2="90" y2="175" stroke="#d97706" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="85" y="188" fill="#d97706" font-size="8">Qs</text>
+          <!-- Qd at ceiling -->
+          <line x1="158" y1="130" x2="158" y2="175" stroke="#1d4ed8" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="153" y="188" fill="#1d4ed8" font-size="8">Qd</text>
+          <!-- Shortage arrow -->
+          <line x1="92" y1="130" x2="155" y2="130" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr)"/>
+          <text x="115" y="125" fill="#dc2626" font-size="8" text-anchor="middle">SHORTAGE</text>
+          <text x="50" y="13" fill="#0f172a" font-size="9" font-weight="bold">Price Ceiling (below Pe)</text>
+        </svg>
+      </div>
+      <p style="font-size:0.82rem">Goal: Make goods affordable. Result: Shortage + Black Markets. Examples: Rent control, gas price limits.</p>
+    </div>
+    <div>
+      <h3>Price Floor</h3>
+      <p><strong>Minimum</strong> legal price. Binding only if set <strong>ABOVE</strong> equilibrium → causes a <strong>Surplus</strong>.</p>
+      <div class="graph-wrap">
+        <svg width="240" height="200" aria-label="Price floor graph">
+          <rect width="240" height="200" fill="#1a1d27" rx="10"/>
+          <line x1="40" y1="15" x2="40" y2="175" stroke="#475569" stroke-width="1.5"/>
+          <line x1="40" y1="175" x2="220" y2="175" stroke="#475569" stroke-width="1.5"/>
+          <text x="20" y="95" fill="#8892a4" transform="rotate(-90,20,95)" text-anchor="middle" font-size="9">P</text>
+          <text x="130" y="192" fill="#8892a4" text-anchor="middle" font-size="9">Q</text>
+          <line x1="55" y1="25" x2="215" y2="165" stroke="#1d4ed8" stroke-width="2"/>
+          <text x="217" y="168" fill="#1d4ed8" font-size="10">D</text>
+          <line x1="55" y1="165" x2="195" y2="25" stroke="#d97706" stroke-width="2"/>
+          <text x="197" y="23" fill="#d97706" font-size="10">S</text>
+          <circle cx="125" cy="95" r="3" fill="#fff"/>
+          <line x1="40" y1="95" x2="125" y2="95" stroke="#fff" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="22" y="98" fill="#fff" font-size="8">Pe</text>
+          <!-- Floor above eq -->
+          <line x1="40" y1="60" x2="220" y2="60" stroke="#16a34a" stroke-width="2"/>
+          <text x="4" y="63" fill="#16a34a" font-size="8">Pf</text>
+          <!-- Qd at floor -->
+          <line x1="88" y1="60" x2="88" y2="175" stroke="#1d4ed8" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="83" y="188" fill="#1d4ed8" font-size="8">Qd</text>
+          <!-- Qs at floor -->
+          <line x1="162" y1="60" x2="162" y2="175" stroke="#d97706" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="157" y="188" fill="#d97706" font-size="8">Qs</text>
+          <text x="116" y="55" fill="#16a34a" font-size="8" text-anchor="middle">SURPLUS</text>
+          <text x="50" y="13" fill="#0f172a" font-size="9" font-weight="bold">Price Floor (above Pe)</text>
+        </svg>
+      </div>
+      <p style="font-size:0.82rem">Goal: Keep prices high for producers. Result: Surplus. Examples: Minimum wage, agricultural price supports.</p>
+    </div>
+  </div>
+
+  <h3>Excise Tax</h3>
+  <p>A <strong>per-unit tax on producers</strong>. Shifts the supply curve <strong>LEFT</strong> (up) by the amount of the tax. The "tax wedge" is the vertical distance between S and S<sub>tax</sub>.</p>
+
+  <div class="graph-wrap">
+    <svg width="300" height="230" aria-label="Excise tax graph">
+      <rect width="300" height="230" fill="#1a1d27" rx="10"/>
+      <line x1="45" y1="15" x2="45" y2="195" stroke="#475569" stroke-width="1.5"/>
+      <line x1="45" y1="195" x2="265" y2="195" stroke="#475569" stroke-width="1.5"/>
+      <text x="20" y="105" fill="#8892a4" transform="rotate(-90,20,105)" text-anchor="middle" font-size="10">P</text>
+      <text x="155" y="215" fill="#8892a4" text-anchor="middle" font-size="10">Q</text>
+      <!-- D -->
+      <line x1="60" y1="25" x2="240" y2="185" stroke="#1d4ed8" stroke-width="2"/>
+      <text x="242" y="188" fill="#1d4ed8" font-size="11">D</text>
+      <!-- S original -->
+      <line x1="60" y1="185" x2="200" y2="25" stroke="#d97706" stroke-width="2"/>
+      <text x="202" y="23" fill="#d97706" font-size="11">S</text>
+      <!-- S tax (shifted left/up) -->
+      <line x1="60" y1="145" x2="180" y2="25" stroke="#dc2626" stroke-width="2" stroke-dasharray="5,3"/>
+      <text x="182" y="23" fill="#dc2626" font-size="11">Stax</text>
+      <!-- old eq ~130,105 -->
+      <circle cx="130" cy="105" r="3.5" fill="#fff"/>
+      <line x1="45" y1="105" x2="130" y2="105" stroke="#fff" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="26" y="108" fill="#fff" font-size="9">Pe</text>
+      <!-- new eq ~107,85 -->
+      <circle cx="107" cy="85" r="3.5" fill="#dc2626"/>
+      <!-- Pc consumers pay -->
+      <line x1="45" y1="85" x2="107" y2="85" stroke="#dc2626" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="22" y="88" fill="#dc2626" font-size="8">Pc↑</text>
+      <!-- Pp producers receive (~Pc minus tax) -->
+      <line x1="45" y1="120" x2="107" y2="120" stroke="#16a34a" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="22" y="123" fill="#16a34a" font-size="8">Pp↓</text>
+      <!-- Tax wedge bracket -->
+      <line x1="107" y1="85" x2="107" y2="120" stroke="#fff" stroke-width="2"/>
+      <text x="112" y="105" fill="#fff" font-size="9">TAX</text>
+      <!-- DWL triangle -->
+      <polygon points="107,85 130,105 107,105" fill="#dc2626" fill-opacity="0.3"/>
+      <text x="118" y="100" fill="#dc2626" font-size="8">DWL</text>
+      <text x="60" y="13" fill="#0f172a" font-size="10" font-weight="bold">Excise Tax → S shifts left</text>
+    </svg>
+  </div>
+
+  <h3>Tax Incidence — Who Pays More?</h3>
+  <table>
+    <tr><th>Demand vs Supply Elasticity</th><th>Who Bears More of the Tax?</th></tr>
+    <tr><td>Demand more inelastic than supply</td><td>Consumers pay more</td></tr>
+    <tr><td>Supply more inelastic than demand</td><td>Producers pay more</td></tr>
+    <tr><td>Perfectly inelastic demand</td><td>Consumers pay ALL</td></tr>
+    <tr><td>Perfectly inelastic supply</td><td>Producers pay ALL</td></tr>
+    <tr><td>Perfectly elastic supply</td><td>Consumers pay ALL</td></tr>
+  </table>
+  <div class="formula">⚠️ It doesn't matter whether the tax is levied on consumers or producers — the welfare effects (CS, PS, DWL, TR) are the same.</div>
+</div>
+
+<!-- ===================== 2.9 TRADE ===================== -->
+<div id="trade" class="section">
+  <h2>2.9 — International Trade & Public Policy</h2>
+
+  <div class="grid3">
+    <div class="card"><h4>World Price (Pw)</h4><p>The lower price at which countries can buy goods on the global market. If Pw &lt; domestic Pe, it's beneficial to import.</p></div>
+    <div class="card"><h4>Tariff</h4><p>A <strong>tax on imports</strong> that raises the world price. Protects domestic producers but increases price for consumers.</p></div>
+    <div class="card"><h4>Quota</h4><p>A <strong>limit on the number of imports</strong>. Same effect as tariff (raises effective price). Purpose: protect domestic producers + prevent unemployment.</p></div>
+  </div>
+
+  <div class="graph-wrap" style="margin-top:16px">
+    <svg width="320" height="230" aria-label="International trade tariff graph">
+      <rect width="320" height="230" fill="#1a1d27" rx="10"/>
+      <line x1="45" y1="15" x2="45" y2="195" stroke="#475569" stroke-width="1.5"/>
+      <line x1="45" y1="195" x2="285" y2="195" stroke="#475569" stroke-width="1.5"/>
+      <text x="20" y="105" fill="#8892a4" transform="rotate(-90,20,105)" text-anchor="middle" font-size="10">P</text>
+      <text x="165" y="215" fill="#8892a4" text-anchor="middle" font-size="10">Q</text>
+      <!-- D -->
+      <line x1="60" y1="25" x2="260" y2="185" stroke="#1d4ed8" stroke-width="2"/>
+      <text x="262" y="188" fill="#1d4ed8" font-size="11">D</text>
+      <!-- Domestic S -->
+      <line x1="60" y1="185" x2="220" y2="25" stroke="#d97706" stroke-width="2"/>
+      <text x="222" y="23" fill="#d97706" font-size="11">Sdom</text>
+      <!-- World Price line (low) -->
+      <line x1="45" y1="155" x2="285" y2="155" stroke="#16a34a" stroke-width="1.8"/>
+      <text x="14" y="158" fill="#16a34a" font-size="8">Pw</text>
+      <!-- World Price + Tariff -->
+      <line x1="45" y1="130" x2="285" y2="130" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="5,3"/>
+      <text x="8" y="133" fill="#dc2626" font-size="8">Pw+T</text>
+      <!-- Qs dom at Pw -->
+      <line x1="78" y1="155" x2="78" y2="195" stroke="#d97706" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="66" y="208" fill="#d97706" font-size="8">Qs dom</text>
+      <!-- Qd at Pw -->
+      <line x1="218" y1="155" x2="218" y2="195" stroke="#1d4ed8" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="206" y="208" fill="#1d4ed8" font-size="8">Qd</text>
+      <!-- Imports arrow -->
+      <line x1="80" y1="155" x2="216" y2="155" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="148" y="150" fill="#16a34a" font-size="9" text-anchor="middle">← IMPORTS →</text>
+      <!-- Tariff bracket -->
+      <line x1="280" y1="130" x2="280" y2="155" stroke="#dc2626" stroke-width="2"/>
+      <text x="285" y="143" fill="#dc2626" font-size="9">Tariff</text>
+      <text x="60" y="13" fill="#0f172a" font-size="10" font-weight="bold">Trade with World Price + Tariff</text>
+    </svg>
+  </div>
+
+  <h3>Effects on CS and PS</h3>
+  <table>
+    <tr><th>Scenario</th><th>Consumer Surplus</th><th>Producer Surplus</th></tr>
+    <tr><td>No trade (domestic equilibrium)</td><td>Smaller</td><td>Larger</td></tr>
+    <tr><td>Free trade at lower world price</td><td>↑ Increases (large)</td><td>↓ Decreases</td></tr>
+    <tr><td>Tariff imposed (Pw + tariff)</td><td>↓ Falls from free trade level</td><td>↑ Rises vs free trade</td></tr>
+  </table>
+  <div class="formula">DWL from tariff = lost efficiency due to restricting trade. Tariff revenue goes to government but overall total surplus is lower than free trade.</div>
+</div>
+
+<!-- ===================== FLASHCARDS ===================== -->
+<div id="flashcards" class="section">
+  <h2>🃏 Unit 2 Flashcards</h2>
+  <p style="color:var(--muted);margin-bottom:12px">Click the card to flip it. Use arrows to navigate.</p>
+  <div class="fc-container" onclick="flipCard()">
+    <div class="fc-inner" id="fc-inner">
+      <div class="fc-front" id="fc-front">Loading...</div>
+      <div class="fc-back" id="fc-back"></div>
+    </div>
+  </div>
+  <p class="fc-hint">👆 Click to reveal answer</p>
+  <div id="fc-counter">1 / 20</div>
+  <div class="fc-nav">
+    <button onclick="fcMove(-1)">← Prev</button>
+    <button onclick="fcMove(1)">Next →</button>
+  </div>
+</div>
+
+<!-- ===================== QUIZ ===================== -->
+<div id="quiz" class="section">
+  <h2>❓ Unit 2 Practice Quiz</h2>
+  <div id="quiz-score"></div>
+  <div id="quiz-container"></div>
+  <button id="reset-quiz" onclick="initQuiz()">🔄 Reset Quiz</button>
+</div>
+
+<script>
+// ---- NAV ----
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'flashcards') renderFlashcard();
+  if (id === 'quiz') initQuiz();
+}
+
+// ---- FLASHCARDS ----
+const cards = [
+  { q: "Law of Demand", a: "Inverse relationship between price and Qd: P↑ → Qd↓, P↓ → Qd↑. Demand curve is downward-sloping." },
+  { q: "5 Shifters of Demand (T-N-P-I-F)", a: "Tastes & Preferences, Number of consumers, Price of related goods, Income, Future expectations. Price does NOT shift the curve." },
+  { q: "Law of Supply", a: "Direct relationship between price and Qs: P↑ → Qs↑, P↓ → Qs↓. Supply curve is upward-sloping." },
+  { q: "6 Shifters of Supply", a: "Prices/availability of inputs, Number of sellers, Technology, Govt action (tax/subsidy), Expectations of future profit. Price does NOT shift curve." },
+  { q: "Equilibrium", a: "Point where Qd = Qs. Market clears with no shortage or surplus." },
+  { q: "Shortage vs Surplus", a: "Shortage: Qd > Qs (price below eq.) → price rises. Surplus: Qd < Qs (price above eq.) → price falls." },
+  { q: "Price Elasticity of Demand (PED)", a: "PED = %ΔQd ÷ %ΔP. Measures sensitivity of Qd to price changes. Always negative (use absolute value)." },
+  { q: "Inelastic Demand Characteristics", a: "Few substitutes, necessities, small share of income, needed now. Coefficient < 1. Steep 'I' shaped curve." },
+  { q: "Elastic Demand Characteristics", a: "Many substitutes, luxuries, large share of income, time to decide. Coefficient > 1. Flat curve." },
+  { q: "Total Revenue Test", a: "Inelastic: P↑→TR↑. Elastic: P↑→TR↓. Unit Elastic: Price changes don't change TR." },
+  { q: "Price Elasticity of Supply (PES)", a: "PES = %ΔQs ÷ %ΔP. Based on time — inelastic in short run, elastic in long run. Always positive." },
+  { q: "Cross-Price Elasticity (XED)", a: "XED = %ΔQd(B) ÷ %ΔP(A). Positive = substitutes. Negative = complements." },
+  { q: "Income Elasticity (YED)", a: "YED = %ΔQd ÷ %ΔIncome. Positive = normal good. Negative = inferior good." },
+  { q: "Consumer Surplus (CS)", a: "CS = Max willing to pay − Actual price. Triangle above Pe, below demand curve." },
+  { q: "Producer Surplus (PS)", a: "PS = Actual price − Min willing to accept. Triangle below Pe, above supply curve." },
+  { q: "Deadweight Loss (DWL)", a: "Lost efficiency when mutually beneficial trades don't occur. Triangle representing lost CS + PS when Q ≠ Qe." },
+  { q: "Price Ceiling", a: "Maximum legal price. Binding when BELOW Pe → causes SHORTAGE. Example: rent control." },
+  { q: "Price Floor", a: "Minimum legal price. Binding when ABOVE Pe → causes SURPLUS. Example: minimum wage." },
+  { q: "Excise Tax", a: "Per-unit tax on producers → supply shifts LEFT. Creates tax wedge. DWL increases. Tax incidence depends on relative elasticity." },
+  { q: "Tariff vs Quota", a: "Tariff = tax on imports (raises world price). Quota = limit on import quantity. Both protect domestic producers, reduce CS, create DWL." },
+];
+let fcIdx = 0, fcFlipped = false;
+function renderFlashcard() {
+  document.getElementById('fc-inner').classList.remove('flipped');
+  fcFlipped = false;
+  document.getElementById('fc-front').textContent = cards[fcIdx].q;
+  document.getElementById('fc-back').textContent = cards[fcIdx].a;
+  document.getElementById('fc-counter').textContent = (fcIdx+1) + ' / ' + cards.length;
+}
+function flipCard() {
+  fcFlipped = !fcFlipped;
+  document.getElementById('fc-inner').classList.toggle('flipped', fcFlipped);
+}
+function fcMove(dir) {
+  fcIdx = (fcIdx + dir + cards.length) % cards.length;
+  renderFlashcard();
+}
+
+// ---- QUIZ ----
+const questions = [
+  { q: "Which of the following will DECREASE demand for coffee (a normal good)?", opts: ["A new study shows coffee improves focus", "An increase in the price of tea (a substitute)", "A decrease in consumer income", "An increase in the price of coffee"], ans: 2, exp: "For normal goods, income↓ → demand↓. Price changes cause movement along the curve, not shifts." },
+  { q: "If the price of hot dogs increases, what happens to the demand for hot dog buns?", opts: ["Increases — they are substitutes", "Decreases — they are complements", "Increases — they are complements", "No change — they are unrelated"], ans: 1, exp: "Buns and hot dogs are complements. If price of hot dogs ↑, people buy fewer hot dogs → demand for buns decreases." },
+  { q: "A price ceiling set BELOW equilibrium will result in:", opts: ["A surplus", "No change in market equilibrium", "A shortage", "A deadweight loss that equals zero"], ans: 2, exp: "Price ceiling below Pe → price is too low → Qd > Qs → shortage." },
+  { q: "The price of gasoline increases by 10% and Qd falls by 2%. The demand for gas is:", opts: ["Elastic (PED > 1)", "Unit elastic (PED = 1)", "Inelastic (PED < 1)", "Perfectly elastic"], ans: 2, exp: "PED = 2%/10% = 0.2. Since 0.2 < 1, demand is inelastic." },
+  { q: "An excise tax on producers shifts:", opts: ["The demand curve right", "The supply curve right", "The supply curve left", "The demand curve left"], ans: 2, exp: "Excise tax = per-unit cost on producers → increases cost of production → supply shifts LEFT (decreases)." },
+  { q: "If cross-price elasticity of goods A and B is −3.5, they are:", opts: ["Substitutes", "Complements", "Inferior goods", "Normal goods"], ans: 1, exp: "Negative XED = inverse relationship between prices → complements (used together)." },
+  { q: "Which of the following causes supply to INCREASE?", opts: ["A new tax on producers", "An increase in input prices", "An improvement in production technology", "A decrease in the number of sellers"], ans: 2, exp: "Better technology reduces production costs → supply increases (shifts right)." },
+  { q: "At equilibrium, total surplus is:", opts: ["Zero", "Minimized", "Maximized", "Equal to deadweight loss"], ans: 2, exp: "Equilibrium maximizes the sum of consumer and producer surplus — this is allocative efficiency." },
+  { q: "If supply is perfectly inelastic and a tax is imposed, who bears the full tax burden?", opts: ["Consumers", "Producers", "Government", "Split equally"], ans: 1, exp: "Perfectly inelastic supply (vertical) → producers cannot reduce Qs → they absorb the entire tax." },
+  { q: "When demand increases AND supply increases simultaneously, what is indeterminate?", opts: ["Price", "Quantity", "Both price and quantity", "Neither — both are determinate"], ans: 0, exp: "Double shift rule: D↑ + S↑ → Q definitely increases, but price effect is ambiguous (indeterminate)." },
+  { q: "A tariff on imports will:", opts: ["Increase CS and decrease PS", "Decrease CS and increase PS", "Increase both CS and PS", "Have no effect on CS or PS"], ans: 1, exp: "Tariff raises price → consumers pay more (CS↓) → domestic producers receive higher price (PS↑)." },
+  { q: "Income elasticity is +2.5 for luxury cars. This means luxury cars are:", opts: ["Inferior goods", "Normal goods", "Complement goods", "Substitute goods"], ans: 1, exp: "Positive YED = direct relationship with income = normal good. Higher YED = more income-sensitive (luxury)." },
+];
+let answered = [];
+let quizSet = [];
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+function initQuiz() {
+  quizSet = shuffle(questions).slice(0, Math.min(8, questions.length));
+  answered = new Array(quizSet.length).fill(null);
+  document.getElementById('quiz-score').textContent = '';
+  const c = document.getElementById('quiz-container');
+  c.innerHTML = '';
+  quizSet.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-q';
+    div.id = 'qq-'+i;
+    div.innerHTML = `<p>${i+1}. ${q.q}</p>` + q.opts.map((o,j) =>
+      `<button class="quiz-opt" onclick="answer(${i},${j})" id="opt-${i}-${j}">${o}</button>`
+    ).join('') + `<div class="quiz-feedback" id="fb-${i}"></div>`;
+    c.appendChild(div);
+  });
+}
+function answer(qi, oi) {
+  if (answered[qi] !== null) return;
+  answered[qi] = oi;
+  const q = quizSet[qi];
+  for(let j=0;j<q.opts.length;j++){
+    const btn = document.getElementById(`opt-${qi}-${j}`);
+    if(j===q.ans) btn.classList.add('correct');
+    else if(j===oi) btn.classList.add('wrong');
+    btn.disabled = true;
+  }
+  document.getElementById(`fb-${qi}`).textContent = (oi===q.ans ? '✅ Correct! ' : '❌ Incorrect. ') + q.exp;
+  const done = answered.filter(a=>a!==null).length;
+  const correct = answered.filter((a,i)=>a===quizSet[i].ans).length;
+  if(done===questions.length) {
+    document.getElementById('quiz-score').textContent = `🎯 Final Score: ${correct}/${questions.length}`;
+  }
+}
+</script>
+</body>
+</html>
